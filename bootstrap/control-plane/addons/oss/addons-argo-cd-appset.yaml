@@ -56,6 +56,19 @@ spec:
               - $values/{{metadata.annotations.addons_repo_basepath}}environments/default/addons/{{values.addonChart}}/values.yaml
               - $values/{{metadata.annotations.addons_repo_basepath}}environments/{{metadata.labels.environment}}/addons/{{values.addonChart}}/values.yaml
               - $values/{{metadata.annotations.addons_repo_basepath}}environments/clusters/{{name}}/addons/{{values.addonChart}}/values.yaml
+            values: |
+              configs:
+                params:
+                  server.insecure: true
+              server:
+                ingress:
+                  enabled: true
+                  hostname: argocd.parallelum.dev
+                  ingressClassName: traefik
+                  annotations:
+                    kubernetes.io/ingress.class: traefik
+                    traefik.ingress.kubernetes.io/router.entrypoints: websecure
+                    traefik.ingress.kubernetes.io/router.middlewares: traefik-middleware-only-allowlist-ips@kubernetescrd
       destination:
         namespace: '{{values.addonChartRepositoryNamespace}}'
         name: '{{name}}'

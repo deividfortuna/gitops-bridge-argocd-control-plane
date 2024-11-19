@@ -1,0 +1,138 @@
+additionalArguments:
+  - --providers.kubernetesingress.ingressendpoint.publishedservice=argocd/argo-cd-argocd-server
+
+  - --providers.file.filename=/dynamic-config/dynamic.yaml
+
+image:
+  pullPolicy: Always
+
+providers:
+  kubernetesCRD:
+    allowCrossNamespace: true
+
+certificatesResolvers:
+  cloudflare:
+    acme:
+      email: deividfortuna@gmail.com
+      storage: /config/certs/acme-cloudflare.json
+      dnsChallenge:
+        provider: cloudflare
+        resolvers:
+          - "1.1.1.1"
+
+volumes:
+  - name: traefik-dynamic-config
+    mountPath: /dynamic-config
+    type: configMap
+
+deployment:
+  podAnnotations:
+    prometheus.io/scrape: "true"
+
+logs:
+  general:
+    level: WARN
+
+metrics:
+  prometheus: {}
+
+ports:
+  web:
+    redirectTo:
+      port: websecure
+    forwardedHeaders:
+      insecure: false
+  websecure:
+    forwardedHeaders:
+      insecure: false
+    tls:
+      enabled: true
+      certResolver: cloudflare
+
+env:
+  - name: CF_API_EMAIL
+    valueFrom:
+      secretKeyRef:
+        key: email
+        name: cloudflare-api-token-secret
+  - name: CF_API_KEY
+    valueFrom:
+      secretKeyRef:
+        key: api-token
+        name: cloudflare-api-token-secret
+
+ingressRoute:
+  dashboard:
+    enabled: false
+    entryPoints: ["websecure"]
+    middlewares:
+      - name: middleware-only-allowlist-ips
+
+persistence:
+  enabled: true
+  storageClass: traefik-local-storage
+  size: 256Mi
+  path: /config
+
+ingressClass:
+  enabled: true
+  isDefaultClass: true
+  name: traefik
+
+podSecurityContext:
+  fsGroup: null
+
+service:
+  spec:
+    externalTrafficPolicy: Local
+
+extraObjects:
+  - |
+    apiVersion: traefik.io/v1alpha1
+    kind: Middleware
+    metadata:
+      name: middleware-compress
+      namespace: {{ .Release.Namespace }}
+    spec:
+      compress: {}
+  - |
+    apiVersion: traefik.io/v1alpha1
+    kind: Middleware
+    metadata:
+      name: middleware-only-allowlist-ips
+      namespace: {{ .Release.Namespace }}
+    spec:
+      ipAllowList:
+        sourceRange: {{ .Values.allowedMiddlewarePrivateCIDRs | toYaml | nindent 8 }}
+        ipStrategy:
+          depth: 1
+  - | 
+    apiVersion: storage.k8s.io/v1
+    kind: StorageClass
+    metadata:
+      name: traefik-local-storage
+    provisioner: kubernetes.io/no-provisioner
+    volumeBindingMode: WaitForFirstConsumer
+  - |
+    apiVersion: v1
+    kind: PersistentVolume
+    metadata:
+      name: traefik-local-storage
+    spec:
+      accessModes:
+        - ReadWriteOnce
+      capacity:
+        storage: 256Mi
+      volumeMode: Filesystem
+      storageClassName: traefik-local-storage
+      persistentVolumeReclaimPolicy: Retain
+      local:
+        path: /traefik-storage
+      nodeAffinity:
+        required:
+          nodeSelectorTerms:
+            - matchExpressions:
+                - key: kubernetes.io/hostname
+                  operator: In
+                  values:
+                    - k8s-node-001
