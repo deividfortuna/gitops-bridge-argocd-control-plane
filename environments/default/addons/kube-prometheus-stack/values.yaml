@@ -1,1 +1,18 @@
 # Helm chart values
+# prometheus:
+#   additionalServiceMonitors:
+#     - name: kube-prometheus-stack-traefik
+#       jobLabel: traefik-metrics
+#       selector:
+#         matchLabels:
+#           app.kubernetes.io/component: metrics
+#           app.kubernetes.io/instance: traefik-traefik
+#           app.kubernetes.io/name: traefik
+#       namespaceSelector:
+#         matchNames:
+#         - traefik
+#       endpoints:
+#       - port: metrics
+#         path: /metrics
+alertmanager:
+  enabled: false

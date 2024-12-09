@@ -34,7 +34,35 @@ logs:
     level: WARN
 
 metrics:
-  prometheus: {}
+  prometheus:
+    addRoutersLabels: true
+    addServicesLabels: true
+    service:
+      enabled: true
+      annotations:
+        prometheus.io/scrape: "true"
+        prometheus.io/port: "9100"
+        prometheus.io/path: "/metrics"
+    disableAPICheck: false
+    serviceMonitor:
+      enabled: true
+      namespace: kube-prometheus-stack
+      metricRelabelings:
+        - sourceLabels: [__name__]
+          separator: ;
+          regex: ^fluentd_output_status_buffer_(oldest|newest)_.+
+          replacement: $1
+          action: drop
+      relabelings:
+        - sourceLabels: [__meta_kubernetes_pod_node_name]
+          separator: ;
+          regex: ^(.*)$
+          targetLabel: nodename
+          replacement: $1
+          action: replace
+      jobLabel: kube-prometheus-stack-traefik
+      interval: 30s
+      honorLabels: true
 
 ports:
   web:

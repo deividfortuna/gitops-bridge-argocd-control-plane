@@ -55,6 +55,18 @@ spec:
               - $values/{{metadata.annotations.addons_repo_basepath}}environments/default/addons/{{values.addonChart}}/values.yaml
               - $values/{{metadata.annotations.addons_repo_basepath}}environments/{{metadata.labels.environment}}/addons/{{values.addonChart}}/values.yaml
               - $values/{{metadata.annotations.addons_repo_basepath}}clusters/{{name}}/addons/{{values.addonChart}}/values.yaml
+            values: |
+              grafana:
+                enabled: true
+                ingress:
+                  enabled: true
+                  hosts:
+                    - grafana.{{metadata.annotations.addons_domain}}
+                  ingressClassName: traefik
+                  annotations:
+                    kubernetes.io/ingress.class: traefik
+                    traefik.ingress.kubernetes.io/router.entrypoints: websecure
+                    traefik.ingress.kubernetes.io/router.middlewares: traefik-middleware-only-allowlist-ips@kubernetescrd
       destination:
         namespace: '{{values.addonChart}}'
         name: '{{name}}'
