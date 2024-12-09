@@ -25,16 +25,21 @@ volumes:
     mountPath: /dynamic-config
     type: configMap
 
-deployment:
-  podAnnotations:
-    prometheus.io/scrape: "true"
-
 logs:
   general:
     level: WARN
 
 metrics:
-  prometheus: {}
+  prometheus:
+    addRoutersLabels: true
+    addServicesLabels: true
+    service:
+      enabled: true
+      annotations:
+        prometheus.io/scrape: "true"
+        prometheus.io/port: "9100"
+        prometheus.io/path: "/metrics"
+    disableAPICheck: false
 
 ports:
   web:
