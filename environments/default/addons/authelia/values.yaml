@@ -1,0 +1,36 @@
+ingress:
+  enabled: true
+
+  traefikCRD: 
+    enabled: true
+    entryPoints:
+      - websecure
+
+configMap:
+  theme: dark
+  authentication_backend:
+    file:
+      enabled: true
+  session:
+    cookies:
+      - domain: parallelum.dev
+        subdomain: auth
+    redis:
+      enabled: true
+      deploy: true
+      host: authelia-redis-master.authelia.svc.cluster.local
+
+  notifier:
+    filesystem:
+      enabled: true
+  storage:
+    local:
+      enabled: true
+
+persistence:
+  enabled: true
+  annotations:
+    pv.kubernetes.io/provisioned-by: nfs.csi.k8s.io
+  storageClass: nfs-csi
+  accessModes:
+    - ReadWriteMany

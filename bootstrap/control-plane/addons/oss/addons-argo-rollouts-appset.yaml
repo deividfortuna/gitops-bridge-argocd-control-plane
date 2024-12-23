@@ -67,6 +67,8 @@ spec:
                     kubernetes.io/ingress.class: traefik
                     traefik.ingress.kubernetes.io/router.entrypoints: websecure
                     traefik.ingress.kubernetes.io/router.middlewares: traefik-middleware-only-allowlist-ips@kubernetescrd
+                    # traefik.ingress.kubernetes.io/router.middlewares: authelia-forwardauth-authelia@kubernetescrd
+                    # traefik.ingress.kubernetes.io/router.tls: true
       destination:
         namespace: '{{values.addonChart}}'
         name: '{{name}}'
