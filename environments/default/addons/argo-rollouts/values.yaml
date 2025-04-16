@@ -1,8 +1,8 @@
 # Helm chart values
 dashboard:
   extraArgs:
-  - "--root-path=/dashboard"
+    - "--root-path=dashboard/local"
 controller:
   extraArgs:
-  - "--traefik-api-group=traefik.io"
-  - "--traefik-api-version=traefik.io/v1alpha1"
+    - "--traefik-api-group=traefik.io"
+    - "--traefik-api-version=traefik.io/v1alpha1"

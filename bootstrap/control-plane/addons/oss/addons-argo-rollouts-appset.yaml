@@ -58,8 +58,6 @@ spec:
             values: |
               dashboard:
                 enabled: true
-                extraArgs:
-                  - "--root-path=/dashboard"
                 ingress:
                   enabled: true
                   hosts:
