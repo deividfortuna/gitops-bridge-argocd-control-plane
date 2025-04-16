@@ -1,4 +1,7 @@
 # Helm chart values
+dashboard:
+  extraArgs:
+  - "--root-path=/dashboard"
 controller:
   extraArgs:
   - "--traefik-api-group=traefik.io"
